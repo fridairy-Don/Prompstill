@@ -48,8 +48,7 @@ function App() {
 
   return (
     <main
-      className="relative h-full overflow-hidden rounded-[16px] border-[2.5px] border-ink bg-cream animate-app-enter"
-      style={{ backgroundColor: "var(--cream)" }}
+      className="app-shell relative h-full overflow-hidden rounded-[16px] border-[2.5px] border-ink animate-app-enter"
     >
       <TrafficLights />
 

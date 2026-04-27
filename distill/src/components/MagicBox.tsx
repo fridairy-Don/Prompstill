@@ -45,8 +45,8 @@ export function MagicBox() {
           : "shadow-none"
       }`}
     >
-      {/* Sparkle dingbat — top right */}
-      <div className="pointer-events-none absolute -right-1.5 -top-1.5 rotate-12 select-none text-[18px] text-mustard">
+      {/* Sparkle dingbat — top right inside box */}
+      <div className="pointer-events-none absolute right-3 top-2 rotate-[15deg] select-none text-[18px] font-bold text-mustard">
         ✦
       </div>
 
@@ -65,7 +65,7 @@ export function MagicBox() {
             initial={{ opacity: 1, y: 0, filter: "blur(0px)" }}
             exit={{ opacity: 0, y: -8, filter: "blur(2px)" }}
             transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-            className="absolute inset-x-6 inset-y-5 w-auto h-auto resize-none border-0 outline-0 bg-transparent text-[16px] leading-[1.55] text-ink placeholder:text-ink-faint placeholder:italic font-medium tracking-[-0.005em] disabled:opacity-100"
+            className="absolute inset-x-6 inset-y-5 w-auto h-auto resize-none border-0 outline-none ring-0 bg-transparent text-[16px] leading-[1.55] text-ink placeholder:text-ink-faint placeholder:italic font-medium tracking-[-0.005em] disabled:opacity-100 focus:outline-none focus:ring-0"
           />
         )}
 
@@ -86,7 +86,7 @@ export function MagicBox() {
                 value={output}
                 onChange={(e) => setOutput(e.target.value)}
                 spellCheck={false}
-                className="w-full h-full resize-none border-0 outline-0 bg-transparent text-[16px] leading-[1.55] text-ink font-medium tracking-[-0.005em]"
+                className="w-full h-full resize-none border-0 outline-none ring-0 bg-transparent text-[16px] leading-[1.55] text-ink font-medium tracking-[-0.005em] focus:outline-none focus:ring-0"
               />
             ) : (
               <div className="w-full h-full overflow-y-auto text-[16px] leading-[1.55] text-ink font-medium tracking-[-0.005em] whitespace-pre-wrap">

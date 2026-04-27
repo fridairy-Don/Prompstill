@@ -1,0 +1,239 @@
+- generic [active] [ref=e1]:
+  - heading "Distill v4 — Y2K Revival" [level=1] [ref=e2]
+  - paragraph [ref=e3]:
+    - strong [ref=e4]: Cream + Ink Borders + Pop Color Blocks
+    - text: — 90s Mac OS 怀旧框架 × 当代 SaaS 排版。点
+    - strong [ref=e5]: 设置
+    - text: 看完整 Settings, 点
+    - strong [ref=e6]: 历史
+    - text: 看色块卡片, 切换浅深色看怀旧暗模式。
+  - generic [ref=e7]:
+    - button "浅色" [ref=e8] [cursor=pointer]
+    - button "深色" [ref=e9] [cursor=pointer]
+    - button "▶ 模拟优化" [ref=e11] [cursor=pointer]
+    - button "↻ 重置" [ref=e12] [cursor=pointer]
+    - button "📜 历史" [ref=e13] [cursor=pointer]
+    - button "⚙ 设置" [ref=e14] [cursor=pointer]
+  - generic [ref=e18]:
+    - button "⚙" [ref=e23] [cursor=pointer]
+    - generic [ref=e24]:
+      - generic [ref=e25]:
+        - generic: ✦
+        - textbox "把你想说的扔进来…" [ref=e26]: 啊这个不对啊我说的不是这个意思, 我要的是那种点进去之后会有动画的, 不是直接弹出来, 而且颜色也太亮了, 那个绿色不是我之前说的那种绿
+        - generic:
+          - button "复制"
+          - button "↻ 新一条"
+      - generic [ref=e27]:
+        - button "碎碎念 ▾" [ref=e28] [cursor=pointer]:
+          - generic [ref=e30]: 碎碎念
+          - generic [ref=e31]: ▾
+        - generic:
+          - generic:
+            - generic:
+              - generic: 碎碎念
+              - generic: 通用清洗 → 清晰 prompt
+            - generic: ✓
+          - generic:
+            - generic:
+              - generic: 代码反馈
+              - generic: 给 AI coding agent 的反馈
+          - generic:
+            - generic:
+              - generic: 产品工程
+              - generic: 想法 → Vibe Coding spec
+          - generic:
+            - generic:
+              - generic: 情感 / 育儿 / …
+              - generic: 未来更多模式
+        - button "Sonnet 4.6 ▾" [ref=e32] [cursor=pointer]:
+          - generic [ref=e33]: Sonnet 4.6
+          - generic [ref=e34]: ▾
+        - generic:
+          - generic:
+            - generic: Claude Haiku 4.5
+            - generic: 经济
+          - generic:
+            - generic: Claude Sonnet 4.6
+            - generic: 默认
+          - generic:
+            - generic: Claude Opus 4.7
+            - generic: 旗舰
+          - generic:
+            - generic: GPT-5
+          - generic:
+            - generic: Kimi K2
+        - button "⌘↵ 优化" [ref=e35] [cursor=pointer]:
+          - generic [ref=e36]: ⌘↵
+          - text: 优化
+      - generic [ref=e37] [cursor=pointer]:
+        - generic [ref=e38]: ▲
+        - generic [ref=e39]: 历史
+        - generic [ref=e40]: "3"
+    - generic:
+      - generic:
+        - generic: 设置 ✦
+        - button "✕"
+      - generic:
+        - generic:
+          - generic:
+            - generic: API Keys
+          - generic:
+            - generic:
+              - generic: OpenRouter
+              - generic: 已配置
+            - generic:
+              - textbox: sk-or-v1-xxxxxxxxxxxxxxxx
+              - button "更新"
+              - button "删除"
+            - generic: 给 Claude / GPT / Gemini 用, key 存在 macOS Keychain
+          - generic:
+            - generic:
+              - generic: Kimi (Moonshot)
+              - generic: 未配置
+            - generic:
+              - textbox "粘贴 sk-... key"
+              - button "保存"
+        - generic:
+          - generic:
+            - generic: Prompts
+          - generic:
+            - generic: 3 个预设的 prompt 文件存在本地, 编辑后下次优化即生效, 无需重启或重建。
+            - generic:
+              - button "打开 prompts 目录"
+              - button "重置默认"
+        - generic:
+          - generic:
+            - generic: 快捷键
+          - generic:
+            - generic: 唤出窗口
+            - generic:
+              - generic: ⌘
+              - generic: ⇧
+              - generic: Space
+              - button "更改"
+          - generic:
+            - generic: 触发优化
+            - generic:
+              - generic: ⌘
+              - generic: ↵
+          - generic:
+            - generic: 收起窗口
+            - generic:
+              - generic: esc
+        - generic:
+          - generic:
+            - generic: 历史记录
+          - generic:
+            - generic: 保留最近
+            - generic: 100 条
+          - generic:
+            - generic: 清空
+            - generic:
+              - button "清空全部"
+        - generic:
+          - generic:
+            - generic: 关于
+          - generic:
+            - text: Distill v0.2.0 ● macOS 菜单栏 prompt 工具
+            - link "github.com/fridairy-Don/Prompstill":
+              - /url: "#"
+    - generic [ref=e41]:
+      - generic [ref=e43]:
+        - generic [ref=e44]: 历史 ✦
+        - button "清空" [ref=e45] [cursor=pointer]
+      - generic [ref=e46]:
+        - generic [ref=e47] [cursor=pointer]:
+          - generic [ref=e48]:
+            - generic [ref=e49]: 2 小时前
+            - generic [ref=e50]: 代码
+          - generic [ref=e51]: 改 auth 用 jwt 而不是 sessions, 邮件也坏了
+        - generic [ref=e52] [cursor=pointer]:
+          - generic [ref=e53]:
+            - generic [ref=e54]: 昨天 14:23
+            - generic [ref=e55]: 产品
+          - generic [ref=e56]: 想做个按周组织的灵感剪贴板, 给设计师用…
+        - generic [ref=e57] [cursor=pointer]:
+          - generic [ref=e58]:
+            - generic [ref=e59]: 3 天前
+            - generic [ref=e60]: 碎碎念
+          - generic [ref=e61]: 那个按钮放右下角不行, 应该在中间或者…
+  - complementary [ref=e62]:
+    - heading "v4 应用了 8 关键词" [level=4] [ref=e63]
+    - list [ref=e64]:
+      - listitem [ref=e65]:
+        - text: ▸
+        - strong [ref=e67]: Cream base
+        - text: "#f5ecd5"
+      - listitem [ref=e68]:
+        - text: ▸
+        - strong [ref=e70]: Hairline ink
+        - text: 2-2.5px 纯黑边
+      - listitem [ref=e71]:
+        - text: ▸
+        - strong [ref=e73]: Pop blocks
+        - text: mauve / terracotta / lavender
+      - listitem [ref=e74]:
+        - text: ▸
+        - strong [ref=e75]: Heavy display
+        - text: 标题 800, 按钮 800, 正文 500
+      - listitem [ref=e76]:
+        - text: ▸
+        - strong [ref=e77]: Traffic lights
+        - text: 左上 3 点缀
+      - listitem [ref=e78]:
+        - text: ▸
+        - strong [ref=e79]: Pill tabs
+        - text: 黑边 999px, hover/active 反色
+      - listitem [ref=e80]:
+        - text: ▸
+        - strong [ref=e81]: Radius
+        - text: 14-16px 容器, 999 pill
+      - listitem [ref=e82]:
+        - text: ▸
+        - strong [ref=e83]: Sparkle ✦
+        - text: 仅在魔法框 + 设置标题, 节制
+    - heading "Pop colors" [level=4] [ref=e84]
+    - list [ref=e85]:
+      - listitem [ref=e86]:
+        - text: ▸
+        - text: 碎碎念 mauve
+      - listitem [ref=e88]:
+        - text: ▸
+        - text: 代码 terracotta
+      - listitem [ref=e90]:
+        - text: ▸
+        - text: 产品 lavender
+      - listitem [ref=e92]:
+        - text: ▸
+        - text: mint (mint = 已配置)
+      - listitem [ref=e94]:
+        - text: ▸
+        - text: mustard (推测高亮)
+    - heading "关键交互" [level=4] [ref=e96]
+    - list [ref=e97]:
+      - listitem [ref=e98]:
+        - text: ▸ 魔法框 focus → 浮起 +
+        - code [ref=e99]: 4px
+        - text: 偏移黑影
+      - listitem [ref=e100]:
+        - text: "▸ 优化按钮:"
+        - code [ref=e101]: 3px
+        - text: 黑影 hover 抬到
+        - code [ref=e102]: 4px
+        - text: active 收
+        - code [ref=e103]: 0px
+        - text: "\"图章\"感"
+      - listitem [ref=e104]: "▸ 历史卡片 hover: 平移 + 影子放大"
+      - listitem [ref=e105]: "▸ 模式菜单: pop up + stagger 弹性"
+      - listitem [ref=e106]: "▸ 模型菜单: 简单 fade slide"
+      - listitem [ref=e107]: ▸ "推测" 用 mustard 黄色 chip 标
+    - heading "暗模式" [level=4] [ref=e108]
+    - list [ref=e109]:
+      - listitem [ref=e110]:
+        - text: "▸ 背景: 深棕"
+        - code [ref=e111]: "#1c1610"
+      - listitem [ref=e112]:
+        - text: "▸ 边框/字: 奶油"
+        - code [ref=e113]: "#f5ecd5"
+      - listitem [ref=e114]: ▸ 反转的 "暗房 retro" 感觉
+      - listitem [ref=e115]: ▸ Pop colors 略提亮

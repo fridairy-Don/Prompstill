@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useAppStore } from "../store/useAppStore";
 import type { ModelOption } from "../lib/types";
@@ -16,10 +16,13 @@ function shortLabel(label: string): string {
 }
 
 export function ModelPicker() {
-  const { model, models, setModel, phase } = useAppStore();
-  const [open, setOpen] = useState(false);
+  const { model, models, setModel, phase, openMenu, setOpenMenu } =
+    useAppStore();
   const ref = useRef<HTMLDivElement>(null);
-  const disabled = phase !== "idle" || models.length === 0;
+  const disabled =
+    phase === "dissolving" || phase === "streaming" || models.length === 0;
+  const open = openMenu === "model";
+  const setOpen = (v: boolean) => setOpenMenu(v ? "model" : null);
 
   useEffect(() => {
     const onDoc = (e: MouseEvent) => {
@@ -36,7 +39,7 @@ export function ModelPicker() {
         disabled={disabled}
         onClick={(e) => {
           e.stopPropagation();
-          setOpen((v) => !v);
+          setOpen(!open);
         }}
         className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-[12px] font-semibold text-ink-mute transition-colors hover:text-ink disabled:opacity-50"
       >

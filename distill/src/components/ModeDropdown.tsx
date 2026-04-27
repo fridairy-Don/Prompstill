@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useAppStore } from "../store/useAppStore";
 import { PRESET_LABELS, type Preset } from "../lib/types";
@@ -19,10 +19,11 @@ const MODES: ModeMeta[] = [
 const COMING = { id: "coming", label: "情感 / 育儿 / …", desc: "未来更多模式" };
 
 export function ModeDropdown() {
-  const { preset, setPreset, phase } = useAppStore();
-  const [open, setOpen] = useState(false);
+  const { preset, setPreset, phase, openMenu, setOpenMenu } = useAppStore();
   const ref = useRef<HTMLDivElement>(null);
-  const disabled = phase !== "idle";
+  const disabled = phase === "dissolving" || phase === "streaming";
+  const open = openMenu === "mode";
+  const setOpen = (v: boolean) => setOpenMenu(v ? "mode" : null);
 
   // Click outside to close
   useEffect(() => {
@@ -42,7 +43,7 @@ export function ModeDropdown() {
         disabled={disabled}
         onClick={(e) => {
           e.stopPropagation();
-          setOpen((v) => !v);
+          setOpen(!open);
         }}
         className={`group inline-flex items-center gap-1.5 rounded-full border-[2px] border-ink px-2.5 py-1 text-[12px] font-bold transition-colors disabled:opacity-50 ${
           open

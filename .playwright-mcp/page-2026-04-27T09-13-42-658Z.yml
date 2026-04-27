@@ -1,0 +1,36 @@
+- main [ref=e3]:
+  - button "设置" [ref=e4] [cursor=pointer]: ⚙
+  - generic [ref=e5]:
+    - generic [ref=e6]:
+      - generic: ✦
+      - textbox "把你想说的扔进来…" [ref=e7]: 这是用户的长输入文本，用来测试模式下拉菜单是否会跟文字重叠。这是一段比较长的中文，模拟真实使用场景下输入框已经被填得比较满的情况。我们要看模式下拉菜单弹出时，会不会跟这段文字穿透重叠。
+    - generic [ref=e8]:
+      - generic [ref=e9]:
+        - button "碎碎念 ▾" [active] [ref=e10] [cursor=pointer]:
+          - generic [ref=e12]: 碎碎念
+          - generic [ref=e13]: ▾
+        - generic [ref=e47]:
+          - generic [ref=e48] [cursor=pointer]:
+            - generic [ref=e50]:
+              - generic [ref=e51]: 碎碎念
+              - generic [ref=e52]: 通用清洗 → 清晰 prompt
+            - generic [ref=e53]: ✓
+          - generic [ref=e56] [cursor=pointer]:
+            - generic [ref=e57]: 代码反馈
+            - generic [ref=e58]: 给 AI coding agent 的反馈
+          - generic [ref=e61] [cursor=pointer]:
+            - generic [ref=e62]: 产品工程
+            - generic [ref=e63]: 想法 → Vibe Coding spec
+          - generic [ref=e66]:
+            - generic [ref=e67]: 情感 / 育儿 / …
+            - generic [ref=e68]: 未来更多模式
+      - button "选模型 ▾" [disabled] [ref=e15]:
+        - generic [ref=e16]: 选模型
+        - generic [ref=e17]: ▾
+      - button "⌘↵ 优化" [disabled] [ref=e18]:
+        - generic [ref=e19]: ⌘↵
+        - generic [ref=e20]: 优化
+    - button "▲ 历史 0" [ref=e21] [cursor=pointer]:
+      - generic [ref=e22]: ▲
+      - generic [ref=e23]: 历史
+      - generic [ref=e24]: "0"

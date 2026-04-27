@@ -2,11 +2,13 @@ import { create } from "zustand";
 import type { HistoryItem, ModelOption, Preset } from "../lib/types";
 
 export type Phase = "idle" | "dissolving" | "streaming" | "complete";
+export type OpenMenu = "mode" | "model" | null;
 
 interface AppState {
   // Panels (mutually exclusive overlays on top of magic area)
   settingsOpen: boolean;
   drawerOpen: boolean;
+  openMenu: OpenMenu;
 
   // Core state
   preset: Preset;
@@ -22,6 +24,7 @@ interface AppState {
   // Setters
   setSettingsOpen: (b: boolean) => void;
   setDrawerOpen: (b: boolean) => void;
+  setOpenMenu: (m: OpenMenu) => void;
   setPreset: (p: Preset) => void;
   setModel: (m: ModelOption) => void;
   setModels: (m: ModelOption[]) => void;
@@ -43,6 +46,7 @@ interface AppState {
 export const useAppStore = create<AppState>((set) => ({
   settingsOpen: false,
   drawerOpen: false,
+  openMenu: null,
 
   preset: "distill",
   model: null,
@@ -56,6 +60,7 @@ export const useAppStore = create<AppState>((set) => ({
 
   setSettingsOpen: (settingsOpen) => set({ settingsOpen }),
   setDrawerOpen: (drawerOpen) => set({ drawerOpen }),
+  setOpenMenu: (openMenu) => set({ openMenu }),
   setPreset: (preset) => set({ preset }),
   setModel: (model) => set({ model }),
   setModels: (models) => set({ models }),
@@ -76,5 +81,6 @@ export const useAppStore = create<AppState>((set) => ({
 
   startOptimize: () =>
     set({ phase: "dissolving", output: "", error: null }),
-  reset: () => set({ input: "", output: "", error: null, phase: "idle" }),
+  // 新一条: 清空输出, 回到 idle, 但保留 input 让用户编辑后再优化
+  reset: () => set({ output: "", error: null, phase: "idle" }),
 }));
