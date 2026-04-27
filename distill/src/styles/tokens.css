@@ -1,0 +1,37 @@
+/* Y2K Revival × Modern Productivity — design tokens */
+
+:root {
+  --cream: #f5ecd5;
+  --cream-2: #fdf6e8;
+  --cream-3: #ebe0c4;
+  --ink: #0a0a0a;
+  --ink-mute: #3d3d3d;
+  --ink-faint: #8a8170;
+
+  --mauve: #9b3a3a;
+  --terracotta: #e85d2c;
+  --lavender: #8a7ab8;
+  --mint: #5a8c70;
+  --mustard: #d4a52e;
+
+  --backdrop: rgba(40, 25, 10, 0.4);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --cream: #1c1610;
+    --cream-2: #2a2218;
+    --cream-3: #16110b;
+    --ink: #f5ecd5;
+    --ink-mute: #c4b896;
+    --ink-faint: #6e6450;
+
+    --mauve: #d97a7a;
+    --terracotta: #f08c5a;
+    --lavender: #b8a8d6;
+    --mint: #88c0a0;
+    --mustard: #f0c04a;
+
+    --backdrop: rgba(0, 0, 0, 0.6);
+  }
+}

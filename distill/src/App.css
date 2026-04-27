@@ -1,3 +1,6 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
+@import "./styles/tokens.css";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -8,7 +11,44 @@ body,
   height: 100%;
   margin: 0;
   background: transparent;
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue",
-    sans-serif;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "SF Pro Text",
+    "Helvetica Neue", sans-serif;
   -webkit-font-smoothing: antialiased;
+  color: var(--ink);
+}
+
+/* Scrollbar — keep retro slim */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: var(--ink);
+  opacity: 0.2;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover { opacity: 0.4; }
+
+/* Mustard guess chip — used inside streamed output */
+.guess {
+  background: var(--mustard);
+  color: var(--ink);
+  padding: 1px 7px;
+  border: 1.5px solid var(--ink);
+  border-radius: 6px;
+  font-size: 0.86em;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Streaming cursor */
+.stream-cursor {
+  display: inline-block;
+  width: 8px;
+  height: 1.05em;
+  background: var(--ink);
+  vertical-align: text-bottom;
+  margin-left: 2px;
+  animation: blink 0.8s steps(2) infinite;
+}
+@keyframes blink {
+  to { opacity: 0; }
 }

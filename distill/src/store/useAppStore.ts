@@ -1,66 +1,80 @@
 import { create } from "zustand";
 import type { HistoryItem, ModelOption, Preset } from "../lib/types";
 
-export type View = "main" | "settings";
+export type Phase = "idle" | "dissolving" | "streaming" | "complete";
 
 interface AppState {
-  view: View;
+  // Panels (mutually exclusive overlays on top of magic area)
+  settingsOpen: boolean;
+  drawerOpen: boolean;
+
+  // Core state
   preset: Preset;
   model: ModelOption | null;
   models: ModelOption[];
   input: string;
   output: string;
-  busy: boolean;
+  phase: Phase;
   error: string | null;
   history: HistoryItem[];
   expandedHistoryId: number | null;
 
-  setView: (v: View) => void;
+  // Setters
+  setSettingsOpen: (b: boolean) => void;
+  setDrawerOpen: (b: boolean) => void;
   setPreset: (p: Preset) => void;
   setModel: (m: ModelOption) => void;
   setModels: (m: ModelOption[]) => void;
   setInput: (s: string) => void;
   setOutput: (s: string) => void;
   appendOutput: (chunk: string) => void;
-  setBusy: (b: boolean) => void;
+  setPhase: (p: Phase) => void;
   setError: (e: string | null) => void;
   setHistory: (h: HistoryItem[]) => void;
   prependHistory: (h: HistoryItem) => void;
   removeHistoryItem: (id: number) => void;
   setExpandedHistoryId: (id: number | null) => void;
+
+  // Composite
+  startOptimize: () => void;
   reset: () => void;
 }
 
 export const useAppStore = create<AppState>((set) => ({
-  view: "main",
+  settingsOpen: false,
+  drawerOpen: false,
+
   preset: "distill",
   model: null,
   models: [],
   input: "",
   output: "",
-  busy: false,
+  phase: "idle",
   error: null,
   history: [],
   expandedHistoryId: null,
 
-  setView: (view) => set({ view }),
+  setSettingsOpen: (settingsOpen) => set({ settingsOpen }),
+  setDrawerOpen: (drawerOpen) => set({ drawerOpen }),
   setPreset: (preset) => set({ preset }),
   setModel: (model) => set({ model }),
   setModels: (models) => set({ models }),
   setInput: (input) => set({ input }),
   setOutput: (output) => set({ output }),
-  appendOutput: (chunk) =>
-    set((s) => ({ output: s.output + chunk })),
-  setBusy: (busy) => set({ busy }),
+  appendOutput: (chunk) => set((s) => ({ output: s.output + chunk })),
+  setPhase: (phase) => set({ phase }),
   setError: (error) => set({ error }),
   setHistory: (history) => set({ history }),
-  prependHistory: (item) =>
-    set((s) => ({ history: [item, ...s.history] })),
+  prependHistory: (item) => set((s) => ({ history: [item, ...s.history] })),
   removeHistoryItem: (id) =>
     set((s) => ({
       history: s.history.filter((h) => h.id !== id),
-      expandedHistoryId: s.expandedHistoryId === id ? null : s.expandedHistoryId,
+      expandedHistoryId:
+        s.expandedHistoryId === id ? null : s.expandedHistoryId,
     })),
   setExpandedHistoryId: (expandedHistoryId) => set({ expandedHistoryId }),
-  reset: () => set({ input: "", output: "", error: null }),
+
+  startOptimize: () =>
+    set({ phase: "dissolving", output: "", error: null }),
+  reset: () => set({ input: "", output: "", error: null, phase: "idle" }),
 }));

@@ -1,26 +1,33 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { useAppStore } from "./store/useAppStore";
 import { keyStatus, listModels } from "./lib/api";
+import { MagicBox } from "./components/MagicBox";
 import { Toolbar } from "./components/Toolbar";
-import { InputCard } from "./components/InputCard";
-import { OutputCard } from "./components/OutputCard";
+import { HistoryDrawer, HistoryTrigger } from "./components/HistoryDrawer";
 import { SettingsPanel } from "./components/SettingsPanel";
-import { HistoryList } from "./components/HistoryList";
+import { TrafficLights } from "./components/TrafficLights";
 import "./App.css";
 
 function App() {
-  const { view, setView, setModels } = useAppStore();
-  const [mounted, setMounted] = useState(false);
+  const { setModels, setSettingsOpen, settingsOpen } = useAppStore();
 
-  useEffect(() => {
-    const id = requestAnimationFrame(() => setMounted(true));
-    return () => cancelAnimationFrame(id);
-  }, []);
-
+  // ESC closes window (or drawer/settings first); ⌘↵ triggers optimize
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") getCurrentWindow().hide();
+      if (e.key === "Escape") {
+        const { drawerOpen, settingsOpen, setDrawerOpen, setSettingsOpen } =
+          useAppStore.getState();
+        if (drawerOpen) {
+          setDrawerOpen(false);
+          return;
+        }
+        if (settingsOpen) {
+          setSettingsOpen(false);
+          return;
+        }
+        getCurrentWindow().hide();
+      }
       if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
         document
@@ -35,65 +42,34 @@ function App() {
   useEffect(() => {
     listModels().then(setModels);
     keyStatus().then((s) => {
-      if (!s.openrouter && !s.kimi) setView("settings");
+      if (!s.openrouter && !s.kimi) setSettingsOpen(true);
     });
-  }, [setModels, setView]);
+  }, [setModels, setSettingsOpen]);
 
   return (
     <main
-      className={`flex h-full flex-col gap-3 overflow-y-auto rounded-xl bg-white/70 p-4 text-neutral-900 backdrop-blur-xl transition-all duration-200 ease-out dark:bg-neutral-900/65 dark:text-neutral-100 ${
-        mounted ? "scale-100 opacity-100" : "scale-[0.98] opacity-0"
-      }`}
+      className="relative h-full overflow-hidden rounded-[16px] border-[2.5px] border-ink bg-cream animate-app-enter"
+      style={{ backgroundColor: "var(--cream)" }}
     >
-      <FadeKey k={view}>
-        {view === "main" ? (
-          <>
-            <header className="flex items-center justify-between">
-              <h1 className="text-base font-semibold tracking-tight">Distill</h1>
-              <button
-                onClick={() => setView("settings")}
-                aria-label="设置"
-                className="rounded-md p-1 text-neutral-500 transition-colors hover:bg-neutral-200/60 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800/60 dark:hover:text-neutral-100"
-              >
-                ⚙
-              </button>
-            </header>
-            <InputCard />
-            <Toolbar />
-            <OutputCard />
-            <HistoryList />
-          </>
-        ) : (
-          <SettingsPanel />
-        )}
-      </FadeKey>
+      <TrafficLights />
+
+      <button
+        onClick={() => setSettingsOpen(!settingsOpen)}
+        aria-label="设置"
+        className="absolute right-3 top-3 z-[5] grid h-7 w-7 place-items-center rounded-full border-[2px] border-transparent text-[14px] text-ink transition-colors hover:border-ink"
+      >
+        ⚙
+      </button>
+
+      <div className="flex h-full flex-col gap-3.5 px-[18px] pb-[18px] pt-9">
+        <MagicBox />
+        <Toolbar />
+        <HistoryTrigger />
+      </div>
+
+      <SettingsPanel />
+      <HistoryDrawer />
     </main>
-  );
-}
-
-function FadeKey({
-  k,
-  children,
-}: {
-  k: string;
-  children: React.ReactNode;
-}) {
-  const [shown, setShown] = useState(false);
-  useEffect(() => {
-    setShown(false);
-    const id = requestAnimationFrame(() => setShown(true));
-    return () => cancelAnimationFrame(id);
-  }, [k]);
-
-  return (
-    <div
-      key={k}
-      className={`flex flex-1 flex-col gap-3 transition-all duration-150 ease-out ${
-        shown ? "translate-y-0 opacity-100" : "translate-y-1 opacity-0"
-      }`}
-    >
-      {children}
-    </div>
   );
 }
 
