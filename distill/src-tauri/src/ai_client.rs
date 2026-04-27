@@ -4,8 +4,19 @@ use futures_util::StreamExt;
 use serde::{Deserialize, Serialize};
 use std::path::Path;
 use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::Arc;
+use std::sync::{Arc, OnceLock};
 use tauri::ipc::Channel;
+
+/// Shared HTTP client (one connection pool for the app's lifetime).
+fn shared_client() -> &'static reqwest::Client {
+    static CLIENT: OnceLock<reqwest::Client> = OnceLock::new();
+    CLIENT.get_or_init(|| {
+        reqwest::Client::builder()
+            .pool_idle_timeout(std::time::Duration::from_secs(60))
+            .build()
+            .unwrap_or_else(|_| reqwest::Client::new())
+    })
+}
 
 #[derive(Serialize)]
 struct ChatRequest<'a> {
@@ -18,7 +29,31 @@ struct ChatRequest<'a> {
 #[derive(Serialize)]
 struct ChatMessage<'a> {
     role: &'a str,
-    content: &'a str,
+    content: MessageContent<'a>,
+}
+
+/// Either a plain string (OpenAI compat default) or an array of content blocks
+/// (Anthropic format, used to attach `cache_control` for prompt caching).
+#[derive(Serialize)]
+#[serde(untagged)]
+enum MessageContent<'a> {
+    Text(&'a str),
+    Blocks(Vec<ContentBlock<'a>>),
+}
+
+#[derive(Serialize)]
+struct ContentBlock<'a> {
+    #[serde(rename = "type")]
+    block_type: &'static str,
+    text: &'a str,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    cache_control: Option<CacheControl>,
+}
+
+#[derive(Serialize)]
+struct CacheControl {
+    #[serde(rename = "type")]
+    cache_type: &'static str,
 }
 
 #[derive(Deserialize)]
@@ -57,6 +92,34 @@ pub enum StreamEvent {
     Done { input_tokens: Option<u32>, output_tokens: Option<u32> },
     Cancelled,
     Error { message: String },
+}
+
+/// Build the `messages` array. For Anthropic models on OpenRouter, mark the
+/// system prompt as cacheable (5 min TTL). On cache hit OpenRouter charges
+/// the cached tokens at ~10% of normal input price.
+fn build_messages<'a>(
+    provider: Provider,
+    model: &str,
+    system_prompt: &'a str,
+    user_input: &'a str,
+) -> Vec<ChatMessage<'a>> {
+    let cache_anthropic =
+        matches!(provider, Provider::OpenRouter) && model.starts_with("anthropic/");
+
+    let system_content = if cache_anthropic {
+        MessageContent::Blocks(vec![ContentBlock {
+            block_type: "text",
+            text: system_prompt,
+            cache_control: Some(CacheControl { cache_type: "ephemeral" }),
+        }])
+    } else {
+        MessageContent::Text(system_prompt)
+    };
+
+    vec![
+        ChatMessage { role: "system", content: system_content },
+        ChatMessage { role: "user", content: MessageContent::Text(user_input) },
+    ]
 }
 
 fn build_request(
@@ -100,14 +163,10 @@ pub async fn optimize(
         model,
         max_tokens: 2048,
         stream: false,
-        messages: vec![
-            ChatMessage { role: "system", content: &system },
-            ChatMessage { role: "user", content: user_input },
-        ],
+        messages: build_messages(provider, model, &system, user_input),
     };
 
-    let client = reqwest::Client::new();
-    let resp = build_request(&client, provider, &api_key, &body)
+    let resp = build_request(shared_client(), provider, &api_key, &body)
         .send()
         .await
         .map_err(|e| format!("网络错误: {e}"))?;
@@ -141,11 +200,13 @@ pub async fn validate_key(provider: Provider, model: &str) -> Result<(), String>
         model,
         max_tokens: 1,
         stream: false,
-        messages: vec![ChatMessage { role: "user", content: "ping" }],
+        messages: vec![ChatMessage {
+            role: "user",
+            content: MessageContent::Text("ping"),
+        }],
     };
 
-    let client = reqwest::Client::new();
-    let resp = build_request(&client, provider, &api_key, &body)
+    let resp = build_request(shared_client(), provider, &api_key, &body)
         .send()
         .await
         .map_err(|e| format!("网络错误: {e}"))?;
@@ -176,14 +237,10 @@ pub async fn optimize_stream(
         model,
         max_tokens: 2048,
         stream: true,
-        messages: vec![
-            ChatMessage { role: "system", content: &system },
-            ChatMessage { role: "user", content: user_input },
-        ],
+        messages: build_messages(provider, model, &system, user_input),
     };
 
-    let client = reqwest::Client::new();
-    let resp = build_request(&client, provider, &api_key, &body)
+    let resp = build_request(shared_client(), provider, &api_key, &body)
         .send()
         .await
         .map_err(|e| format!("网络错误: {e}"))?;
@@ -194,8 +251,12 @@ pub async fn optimize_stream(
         return Err(classify_status_error(status, &text, provider));
     }
 
+    // Buffer raw bytes. We split on '\n' (ASCII 0x0A) which CANNOT appear inside
+    // a multi-byte UTF-8 sequence, so it's safe to find newlines without first
+    // decoding to a string. Each complete line is a self-contained UTF-8 SSE
+    // event, so per-line decoding never splits a multi-byte char.
+    let mut byte_buffer: Vec<u8> = Vec::new();
     let mut stream = resp.bytes_stream();
-    let mut buffer = String::new();
     let mut full_output = String::new();
     let mut last_usage: Option<Usage> = None;
 
@@ -210,40 +271,58 @@ pub async fn optimize_stream(
         }
 
         let chunk = chunk_result.map_err(|e| format!("流式接收错误: {e}"))?;
-        let s = std::str::from_utf8(&chunk).map_err(|e| format!("UTF-8 解码错误: {e}"))?;
-        buffer.push_str(s);
+        byte_buffer.extend_from_slice(&chunk);
 
-        while let Some(idx) = buffer.find('\n') {
-            let line = buffer[..idx].trim_end_matches('\r').to_string();
-            buffer.drain(..=idx);
+        while let Some(idx) = byte_buffer.iter().position(|&b| b == b'\n') {
+            // Drain bytes up to and including the newline.
+            let line_with_lf: Vec<u8> = byte_buffer.drain(..=idx).collect();
+            // Strip trailing \n and optional \r.
+            let mut line_bytes: &[u8] = &line_with_lf[..line_with_lf.len() - 1];
+            if line_bytes.last() == Some(&b'\r') {
+                line_bytes = &line_bytes[..line_bytes.len() - 1];
+            }
+
+            let line = match std::str::from_utf8(line_bytes) {
+                Ok(s) => s,
+                Err(_) => continue, // malformed line, skip
+            };
 
             if line.is_empty() || line.starts_with(':') {
                 continue;
             }
 
-            if let Some(data) = line.strip_prefix("data: ").or_else(|| line.strip_prefix("data:")) {
-                let data = data.trim();
-                if data == "[DONE]" {
-                    break 'outer;
+            let data = match line
+                .strip_prefix("data: ")
+                .or_else(|| line.strip_prefix("data:"))
+            {
+                Some(d) => d.trim(),
+                None => continue,
+            };
+
+            if data == "[DONE]" {
+                break 'outer;
+            }
+            if data.is_empty() {
+                continue;
+            }
+
+            let parsed: serde_json::Value = match serde_json::from_str(data) {
+                Ok(v) => v,
+                Err(_) => continue,
+            };
+
+            if let Some(delta) = parsed["choices"][0]["delta"]["content"].as_str() {
+                if !delta.is_empty() {
+                    full_output.push_str(delta);
+                    let _ = on_event.send(StreamEvent::Chunk {
+                        content: delta.to_string(),
+                    });
                 }
-                if data.is_empty() {
-                    continue;
-                }
-                if let Ok(parsed) = serde_json::from_str::<serde_json::Value>(data) {
-                    if let Some(delta) = parsed["choices"][0]["delta"]["content"].as_str() {
-                        if !delta.is_empty() {
-                            full_output.push_str(delta);
-                            let _ = on_event.send(StreamEvent::Chunk {
-                                content: delta.to_string(),
-                            });
-                        }
-                    }
-                    if let Some(usage_val) = parsed.get("usage") {
-                        if !usage_val.is_null() {
-                            if let Ok(u) = serde_json::from_value::<Usage>(usage_val.clone()) {
-                                last_usage = Some(u);
-                            }
-                        }
+            }
+            if let Some(usage_val) = parsed.get("usage") {
+                if !usage_val.is_null() {
+                    if let Ok(u) = serde_json::from_value::<Usage>(usage_val.clone()) {
+                        last_usage = Some(u);
                     }
                 }
             }
