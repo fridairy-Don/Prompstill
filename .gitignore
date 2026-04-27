@@ -12,6 +12,9 @@ key.md
 # Claude Code workspace settings (per-machine)
 .claude/
 
+# Superpowers brainstorm session (mockups, persisted per project)
+.superpowers/
+
 # Node
 node_modules/
 distill/node_modules/
