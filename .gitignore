@@ -15,6 +15,11 @@ key.md
 # Superpowers brainstorm session (mockups, persisted per project)
 .superpowers/
 
+# Playwright debug screenshots (transient, not for repo)
+.playwright-mcp/
+dev-*.png
+prototype-*.png
+
 # Node
 node_modules/
 distill/node_modules/
