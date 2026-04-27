@@ -45,3 +45,5 @@ pnpm-debug.log*
 .idea/
 *.swp
 *.swo
+pwa-*.png
+final-*.png
