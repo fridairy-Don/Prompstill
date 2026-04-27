@@ -60,7 +60,7 @@ function App() {
         ⚙
       </button>
 
-      <div className="flex h-full flex-col gap-3.5 px-[18px] pb-[18px] pt-11">
+      <div className="flex h-full flex-col gap-3.5 px-[18px] pb-[18px] pt-12">
         <MagicBox />
         <Toolbar />
         <HistoryTrigger />
