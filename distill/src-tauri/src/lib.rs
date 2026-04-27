@@ -166,17 +166,24 @@ pub fn run() {
             commands::list_history,
             commands::delete_history_item,
             commands::clear_history,
+            commands::prompts_dir,
+            commands::open_prompts_dir,
+            commands::reset_default_prompts,
         ])
         .setup(|app| {
             #[cfg(target_os = "macos")]
             app.set_activation_policy(tauri::ActivationPolicy::Accessory);
 
             let data_dir = app.path().app_data_dir().map_err(|e| e.to_string())?;
-            let db = Db::open(data_dir).map_err(|e| -> Box<dyn std::error::Error> { e.into() })?;
+            let db = Db::open(data_dir.clone()).map_err(|e| -> Box<dyn std::error::Error> { e.into() })?;
+            let prompts_dir = prompts::default_prompts_dir(&data_dir);
+            // Write defaults if missing so users have files to edit immediately.
+            let _ = prompts::write_defaults_if_missing(&prompts_dir);
 
             app.manage(AppState {
                 cancel_flag: Arc::new(AtomicBool::new(false)),
                 db,
+                prompts_dir,
             });
 
             #[cfg(desktop)]

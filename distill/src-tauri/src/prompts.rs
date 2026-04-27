@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use std::path::{Path, PathBuf};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
@@ -171,6 +172,61 @@ pub fn system_prompt(preset: Preset) -> &'static str {
         Preset::Code => SYSTEM_PROMPT_CODE,
         Preset::Product => SYSTEM_PROMPT_PRODUCT,
     }
+}
+
+pub fn preset_filename(preset: Preset) -> &'static str {
+    match preset {
+        Preset::Distill => "distill.md",
+        Preset::Code => "code.md",
+        Preset::Product => "product.md",
+    }
+}
+
+/// Resolve system prompt with optional file override.
+/// Reads `<prompts_dir>/<preset>.md` if it exists and is non-empty;
+/// otherwise falls back to the embedded const.
+pub fn system_prompt_resolved(preset: Preset, prompts_dir: Option<&Path>) -> String {
+    if let Some(dir) = prompts_dir {
+        let path = dir.join(preset_filename(preset));
+        if let Ok(content) = std::fs::read_to_string(&path) {
+            let trimmed = content.trim();
+            if !trimmed.is_empty() {
+                return trimmed.to_string();
+            }
+        }
+    }
+    system_prompt(preset).to_string()
+}
+
+/// Write the embedded default prompts to disk so the user can edit them.
+/// Only writes if the file doesn't exist (won't overwrite user edits).
+pub fn write_defaults_if_missing(prompts_dir: &Path) -> Result<(), String> {
+    std::fs::create_dir_all(prompts_dir)
+        .map_err(|e| format!("无法创建 prompts 目录: {e}"))?;
+    for preset in [Preset::Distill, Preset::Code, Preset::Product] {
+        let path = prompts_dir.join(preset_filename(preset));
+        if !path.exists() {
+            std::fs::write(&path, system_prompt(preset))
+                .map_err(|e| format!("写入 {} 失败: {e}", path.display()))?;
+        }
+    }
+    Ok(())
+}
+
+/// Force-overwrite all 3 prompt files with embedded defaults (reset).
+pub fn reset_defaults(prompts_dir: &Path) -> Result<(), String> {
+    std::fs::create_dir_all(prompts_dir)
+        .map_err(|e| format!("无法创建 prompts 目录: {e}"))?;
+    for preset in [Preset::Distill, Preset::Code, Preset::Product] {
+        let path = prompts_dir.join(preset_filename(preset));
+        std::fs::write(&path, system_prompt(preset))
+            .map_err(|e| format!("写入 {} 失败: {e}", path.display()))?;
+    }
+    Ok(())
+}
+
+pub fn default_prompts_dir(data_dir: &Path) -> PathBuf {
+    data_dir.join("prompts")
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

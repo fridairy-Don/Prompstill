@@ -1,7 +1,8 @@
 use crate::keychain;
-use crate::prompts::{system_prompt, Preset, Provider};
+use crate::prompts::{system_prompt_resolved, Preset, Provider};
 use futures_util::StreamExt;
 use serde::{Deserialize, Serialize};
+use std::path::Path;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use tauri::ipc::Channel;
@@ -88,16 +89,19 @@ pub async fn optimize(
     provider: Provider,
     model: &str,
     user_input: &str,
+    prompts_dir: Option<&Path>,
 ) -> Result<OptimizeResult, String> {
     let api_key = keychain::get_key(provider)?
         .ok_or_else(|| format!("尚未配置 {:?} 的 API key, 请到设置页填入", provider))?;
+
+    let system = system_prompt_resolved(preset, prompts_dir);
 
     let body = ChatRequest {
         model,
         max_tokens: 2048,
         stream: false,
         messages: vec![
-            ChatMessage { role: "system", content: system_prompt(preset) },
+            ChatMessage { role: "system", content: &system },
             ChatMessage { role: "user", content: user_input },
         ],
     };
@@ -159,18 +163,21 @@ pub async fn optimize_stream(
     provider: Provider,
     model: &str,
     user_input: &str,
+    prompts_dir: Option<&Path>,
     cancel_flag: Arc<AtomicBool>,
     on_event: Channel<StreamEvent>,
 ) -> Result<OptimizeResult, String> {
     let api_key = keychain::get_key(provider)?
         .ok_or_else(|| format!("尚未配置 {:?} 的 API key, 请到设置页填入", provider))?;
 
+    let system = system_prompt_resolved(preset, prompts_dir);
+
     let body = ChatRequest {
         model,
         max_tokens: 2048,
         stream: true,
         messages: vec![
-            ChatMessage { role: "system", content: system_prompt(preset) },
+            ChatMessage { role: "system", content: &system },
             ChatMessage { role: "user", content: user_input },
         ],
     };

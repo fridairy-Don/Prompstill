@@ -3,6 +3,7 @@ use crate::db::{Db, HistoryItem};
 use crate::keychain;
 use crate::prompts::{self, ModelOption, Preset, Provider};
 use serde::Serialize;
+use std::path::PathBuf;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use tauri::ipc::Channel;
@@ -11,6 +12,7 @@ use tauri::State;
 pub struct AppState {
     pub cancel_flag: Arc<AtomicBool>,
     pub db: Db,
+    pub prompts_dir: PathBuf,
 }
 
 #[derive(Serialize)]
@@ -35,7 +37,8 @@ pub async fn optimize_prompt(
     input: String,
     state: State<'_, AppState>,
 ) -> Result<OptimizeOutput, String> {
-    let r = ai_client::optimize(preset, provider, &model, &input).await?;
+    let prompts_dir = state.prompts_dir.clone();
+    let r = ai_client::optimize(preset, provider, &model, &input, Some(&prompts_dir)).await?;
 
     let preset_str = match preset {
         Preset::Distill => "distill",
@@ -79,12 +82,14 @@ pub async fn optimize_prompt_stream(
 ) -> Result<OptimizeOutput, String> {
     state.cancel_flag.store(false, Ordering::Relaxed);
     let cancel_flag = state.cancel_flag.clone();
+    let prompts_dir = state.prompts_dir.clone();
 
     let result = ai_client::optimize_stream(
         preset,
         provider,
         &model,
         &input,
+        Some(&prompts_dir),
         cancel_flag.clone(),
         on_event.clone(),
     )
@@ -189,4 +194,24 @@ pub fn delete_history_item(state: State<'_, AppState>, id: i64) -> Result<(), St
 #[tauri::command]
 pub fn clear_history(state: State<'_, AppState>) -> Result<(), String> {
     state.db.clear_history()
+}
+
+#[tauri::command]
+pub fn prompts_dir(state: State<'_, AppState>) -> String {
+    state.prompts_dir.to_string_lossy().to_string()
+}
+
+#[tauri::command]
+pub fn open_prompts_dir(state: State<'_, AppState>) -> Result<(), String> {
+    prompts::write_defaults_if_missing(&state.prompts_dir)?;
+    std::process::Command::new("open")
+        .arg(&state.prompts_dir)
+        .spawn()
+        .map_err(|e| format!("打开目录失败: {e}"))?;
+    Ok(())
+}
+
+#[tauri::command]
+pub fn reset_default_prompts(state: State<'_, AppState>) -> Result<(), String> {
+    prompts::reset_defaults(&state.prompts_dir)
 }

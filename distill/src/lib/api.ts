@@ -98,3 +98,15 @@ export function deleteHistoryItem(id: number): Promise<void> {
 export function clearHistory(): Promise<void> {
   return invoke("clear_history");
 }
+
+export function promptsDir(): Promise<string> {
+  return invoke("prompts_dir");
+}
+
+export function openPromptsDir(): Promise<void> {
+  return invoke("open_prompts_dir");
+}
+
+export function resetDefaultPrompts(): Promise<void> {
+  return invoke("reset_default_prompts");
+}
