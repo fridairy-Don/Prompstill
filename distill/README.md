@@ -40,6 +40,38 @@ npm install
 npm run tauri dev
 ```
 
+## 部署到 iPhone (PWA, 不上 App Store)
+
+代码同时支持浏览器/PWA 模式。在 web 中 invoke→fetch、Keychain→localStorage、SQLite→localStorage,
+其它 UI / 视觉 / 状态机完全复用。
+
+### 一次性 Vercel 部署
+
+1. push experiments 分支 (含 PWA 适配)到 GitHub (本仓库已就绪)
+2. 在 [vercel.com](https://vercel.com/new) 用 GitHub 登录, 导入 `Prompstill` 仓库
+3. **Root Directory** 设为 `distill`, framework 自动识别为 Vite
+4. (可选) Production Branch 选 `main`, Preview Branch 选 `experiments`
+5. Deploy → 拿到 `<your-project>.vercel.app` 域名
+
+### iPhone 安装 (3 步)
+
+1. iPhone Safari 打开 `https://<your-project>.vercel.app`
+2. 进设置, 粘 OpenRouter / Kimi 的 key (存 localStorage, 不离开你的设备)
+3. Safari 分享按钮 → **添加到主屏幕** → 桌面多一个 Distill 图标
+4. 之后从图标启动即全屏体验, ⌘↵ 在外接键盘上触发优化 (无键盘可点按钮)
+
+### Web 模式限制 (跟 macOS 桌面版的差异)
+
+| 功能 | 桌面版 | Web/PWA |
+|---|---|---|
+| API key 存储 | macOS Keychain | localStorage (**不要分享 URL**, 浏览器 devtools 可读) |
+| 历史记录 | SQLite (~∞ MB) | localStorage (~5 MB, 自动 trim 100 条) |
+| 全局 ⌘⇧Space 唤出 | ✓ | ✗ (PWA 没有系统级快捷键, 从主屏点开图标) |
+| 编辑 prompts.md 文件 | ✓ (本地文件) | ✗ (内嵌在 `src/lib/web-prompts.ts`, 改后 push 重部署) |
+| 流式输出 | Tauri Channel + Rust SSE | fetch ReadableStream + JS SSE 解析 |
+| 离线启动 app shell | ✓ (binary) | ✓ (Service Worker 缓存) |
+| 离线优化 prompt | ✗ (要联网) | ✗ (要联网) |
+
 ## 验收要点 (M1-M5)
 
 - [x] M1 骨架: tray + ⌘⇧Space + ESC

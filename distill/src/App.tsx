@@ -1,13 +1,19 @@
 import { useEffect } from "react";
-import { getCurrentWindow } from "@tauri-apps/api/window";
 import { useAppStore } from "./store/useAppStore";
 import { keyStatus, listModels } from "./lib/api";
+import { isTauri } from "./lib/env";
 import { MagicBox } from "./components/MagicBox";
 import { Toolbar } from "./components/Toolbar";
 import { HistoryDrawer, HistoryTrigger } from "./components/HistoryDrawer";
 import { SettingsPanel } from "./components/SettingsPanel";
 import { TrafficLights } from "./components/TrafficLights";
 import "./App.css";
+
+async function hideWindow(): Promise<void> {
+  if (!isTauri()) return; // Web/PWA: no window to hide
+  const { getCurrentWindow } = await import("@tauri-apps/api/window");
+  await getCurrentWindow().hide();
+}
 
 function App() {
   const { setModels, setSettingsOpen, settingsOpen } = useAppStore();
@@ -26,7 +32,7 @@ function App() {
           setSettingsOpen(false);
           return;
         }
-        getCurrentWindow().hide();
+        void hideWindow();
       }
       if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();

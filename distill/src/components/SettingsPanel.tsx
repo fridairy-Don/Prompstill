@@ -11,6 +11,7 @@ import {
   setApiKey,
   validateApiKey,
 } from "../lib/api";
+import { isTauri } from "../lib/env";
 import type { Provider } from "../lib/types";
 
 interface ProviderRowProps {
@@ -308,38 +309,59 @@ export function SettingsPanel() {
               />
             </div>
 
-            <div>
-              <SectionLabel>Prompts</SectionLabel>
-              <PromptsSection />
-            </div>
+            {isTauri() && (
+              <div>
+                <SectionLabel>Prompts</SectionLabel>
+                <PromptsSection />
+              </div>
+            )}
 
-            <div>
-              <SectionLabel>快捷键</SectionLabel>
-              <KvRow label="唤出窗口">
-                <Kbd>⌘</Kbd>
-                <Kbd>⇧</Kbd>
-                <Kbd>Space</Kbd>
-              </KvRow>
-              <KvRow label="触发优化">
-                <Kbd>⌘</Kbd>
-                <Kbd>↵</Kbd>
-              </KvRow>
-              <KvRow label="收起窗口">
-                <Kbd>esc</Kbd>
-              </KvRow>
-            </div>
+            {isTauri() && (
+              <div>
+                <SectionLabel>快捷键</SectionLabel>
+                <KvRow label="唤出窗口">
+                  <Kbd>⌘</Kbd>
+                  <Kbd>⇧</Kbd>
+                  <Kbd>Space</Kbd>
+                </KvRow>
+                <KvRow label="触发优化">
+                  <Kbd>⌘</Kbd>
+                  <Kbd>↵</Kbd>
+                </KvRow>
+                <KvRow label="收起窗口">
+                  <Kbd>esc</Kbd>
+                </KvRow>
+              </div>
+            )}
 
             <div>
               <SectionLabel>历史记录</SectionLabel>
               <HistoryControls />
             </div>
 
+            {!isTauri() && (
+              <div>
+                <SectionLabel>Web 模式说明</SectionLabel>
+                <div className="rounded-[12px] border-[2px] border-ink bg-cream-2 p-3 text-[11px] font-medium leading-relaxed text-ink-mute">
+                  <p className="mb-2">
+                    你正在浏览器/PWA 中使用 Distill。API key 存在 localStorage,
+                    历史也在本地, **不要把这个 URL 分享给别人**(他们可在 devtools
+                    里看到你的 key)。
+                  </p>
+                  <p>
+                    iPhone: Safari 打开此页 → 分享 → 添加到主屏幕, 之后从桌面
+                    图标启动即全屏体验。⌘↵ 在外接键盘上仍能触发优化。
+                  </p>
+                </div>
+              </div>
+            )}
+
             <div>
               <SectionLabel>关于</SectionLabel>
               <div className="rounded-[12px] border-[2px] border-ink bg-cream-2 p-4 text-center text-[11px] font-semibold leading-relaxed text-ink-mute">
                 Distill v0.2.0{" "}
-                <span className="text-mauve text-[14px]">●</span> macOS 菜单栏
-                prompt 工具
+                <span className="text-mauve text-[14px]">●</span>{" "}
+                {isTauri() ? "macOS 菜单栏 prompt 工具" : "Web/PWA prompt 工具"}
                 <br />
                 <a
                   href="https://github.com/fridairy-Don/Prompstill"
