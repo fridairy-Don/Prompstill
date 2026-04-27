@@ -16,8 +16,9 @@ use tauri::{
 #[cfg(desktop)]
 use tauri_plugin_global_shortcut::{Code, GlobalShortcutExt, Modifiers, Shortcut, ShortcutState};
 
-#[cfg(target_os = "macos")]
-use window_vibrancy::{apply_vibrancy, NSVisualEffectMaterial, NSVisualEffectState};
+// macOS vibrancy removed — Y2K Revival uses solid cream + paper texture,
+// not Apple HUD blur. With vibrancy off, transparent corners show desktop
+// instead of whitish vibrancy backing.
 
 use commands::AppState;
 use db::Db;
@@ -193,15 +194,7 @@ pub fn run() {
                 app.global_shortcut().register(toggle_shortcut)?;
             }
 
-            #[cfg(target_os = "macos")]
-            if let Some(window) = app.get_webview_window("main") {
-                let _ = apply_vibrancy(
-                    &window,
-                    NSVisualEffectMaterial::HudWindow,
-                    Some(NSVisualEffectState::Active),
-                    Some(12.0),
-                );
-            }
+            // No vibrancy: window stays transparent, content provides cream bg.
 
             let quit_item =
                 MenuItem::with_id(app, "quit", "退出 Distill", true, None::<&str>)?;
