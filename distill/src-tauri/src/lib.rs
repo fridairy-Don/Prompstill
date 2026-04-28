@@ -121,6 +121,15 @@ fn show_anchored(app: &tauri::AppHandle) {
         }
         let _ = window.show();
         let _ = window.set_focus();
+
+        // macOS: 闲置一段后 App Nap 会让 show/focus 第一次失效, 用户感知是
+        // "tray 点一次没反应, 点两次才弹". 把 always_on_top 切 true 再切回 false
+        // 强制前台化, 绕过 nap 延迟。
+        #[cfg(target_os = "macos")]
+        {
+            let _ = window.set_always_on_top(true);
+            let _ = window.set_always_on_top(false);
+        }
     }
 }
 
