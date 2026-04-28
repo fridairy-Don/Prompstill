@@ -19,7 +19,11 @@ export function StampButton() {
   } = useAppStore();
 
   const busy = phase !== "idle" && phase !== "complete";
-  const canClick = busy || (!!input.trim() && !!model && phase === "idle");
+  // 允许在 idle 和 complete 两个 "静止" 态点击。complete 态点击 onClick
+  // 会先 reset() 再 re-run, 实现"再优化一次"。
+  const canClick =
+    busy ||
+    (!!input.trim() && !!model && (phase === "idle" || phase === "complete"));
 
   const onClick = async () => {
     if (busy) {
