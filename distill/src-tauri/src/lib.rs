@@ -210,6 +210,18 @@ pub fn run() {
 
             // No vibrancy: window stays transparent, content provides cream bg.
 
+            // Menubar UX: 失焦自动隐藏 (true menubar behavior)。
+            // 用户切到其它 app, 窗口自动收起。再次唤出走 tray 点击或 ⌘⇧Space。
+            // Devtools 只在 release 之外触发, 这里不 gate。
+            if let Some(window) = app.get_webview_window("main") {
+                let win = window.clone();
+                window.on_window_event(move |event| {
+                    if let tauri::WindowEvent::Focused(false) = event {
+                        let _ = win.hide();
+                    }
+                });
+            }
+
             let quit_item =
                 MenuItem::with_id(app, "quit", "退出 Distill", true, None::<&str>)?;
             let menu = Menu::with_items(app, &[&quit_item])?;
