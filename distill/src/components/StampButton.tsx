@@ -10,7 +10,9 @@ export function StampButton() {
     preset,
     model,
     input,
+    output,
     phase,
+    setInput,
     setPhase,
     setOutput,
     appendOutput,
@@ -19,24 +21,35 @@ export function StampButton() {
   } = useAppStore();
 
   const busy = phase !== "idle" && phase !== "complete";
-  // 允许在 idle 和 complete 两个 "静止" 态点击。complete 态点击 onClick
-  // 会先 reset() 再 re-run, 实现"再优化一次"。
+
+  // 完成态下 textarea 绑定的是 `output` 字段, 用户编辑的是 output, 不是 input。
+  // 所以"再优化一次"时, 实际要送给 LLM 的是当前 output 的内容(可能被用户改过),
+  // 而不是 store 里那份永远停在第一次的 input。
+  const textInBox = phase === "complete" ? output : input;
   const canClick =
     busy ||
-    (!!input.trim() && !!model && (phase === "idle" || phase === "complete"));
+    (!!textInBox.trim() &&
+      !!model &&
+      (phase === "idle" || phase === "complete"));
 
   const onClick = async () => {
     if (busy) {
       cancelOptimize().catch(() => {});
       return;
     }
+
+    // 抓"用户当前看到框里的文字"作为本次要优化的内容。
+    // - idle: 就是 input
+    // - complete: 是 output (因为 UI 把 output 渲染成可编辑 textarea)
+    const textToOptimize = phase === "complete" ? output : input;
+    if (!textToOptimize.trim() || !model) return;
+
     if (phase === "complete") {
-      // Reset and re-run
+      // 把用户编辑过的文本提升为新 input, 清空 output, 回到可流式渲染的状态。
+      setInput(textToOptimize);
       useAppStore.getState().reset();
-      // wait one frame before starting
       await new Promise((r) => requestAnimationFrame(() => r(undefined)));
     }
-    if (!input.trim() || !model) return;
 
     setPhase("dissolving");
     setOutput("");
@@ -53,7 +66,8 @@ export function StampButton() {
           preset,
           provider: model.provider,
           model: model.id,
-          input,
+          // 直接用本地变量, 不依赖闭包里的 input (setInput 是异步, 闭包看不到新值)
+          input: textToOptimize,
         },
         (event) => {
           if (event.type === "chunk") appendOutput(event.content);
