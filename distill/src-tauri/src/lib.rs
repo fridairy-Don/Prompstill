@@ -135,11 +135,16 @@ fn show_anchored(app: &tauri::AppHandle) {
 
 fn toggle_anchored(app: &tauri::AppHandle) {
     if let Some(window) = app.get_webview_window("main") {
-        match window.is_visible() {
-            Ok(true) => {
-                let _ = window.hide();
-            }
-            _ => show_anchored(app),
+        // 仅当 "可见且当前是焦点" 才视为用户想隐藏。
+        // 如果窗口可见但被其他 app 盖住 (用户切去 Chrome / 微信 等),
+        // tray 点击应该把它拉到前面而不是关掉, 否则会出现"点一次没反应,
+        // 点两次才弹"的体验 bug。
+        let visible = window.is_visible().unwrap_or(false);
+        let focused = window.is_focused().unwrap_or(false);
+        if visible && focused {
+            let _ = window.hide();
+        } else {
+            show_anchored(app);
         }
     }
 }
